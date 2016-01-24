@@ -1,3 +1,4 @@
+#include "dbg.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -173,47 +174,92 @@ void Database_push(Database *db, Record *record)
     db->size += 1;
 }
 
-int main()
+Database *Database_create_sample()
 {
     ColumnDef *first_name = ColumnDef_new("first_name", STR);
     ColumnDef *last_name = ColumnDef_new("last_name", STR);
     ColumnDef *age = ColumnDef_new("age", INT);
 
-    ColumnDef *person_cols[] = {first_name, last_name, age};
+    ColumnDef **person_cols = malloc(sizeof(ColumnDef *) * 3);
+    assert(person_cols != NULL);
+    person_cols[0] = first_name;
+    person_cols[1] = last_name;
+    person_cols[2] = age;
     RecordDef *person = RecordDef_new("person", person_cols, 3);
 
-    for (int i = 0; i < 3; i++) {
-        printf("column: %s\n", person->column_ds[i]->key);
-    }
-
-    RecordDef *record_ds[] = {person};
+    RecordDef **record_ds = malloc(sizeof(RecordDef *));
+    assert(record_ds != NULL);
+    record_ds[0] = person;
     Database *db = Database_new(record_ds, 1);
 
-    printf("bool_size %d\n", db->bool_size);
-    printf("int_size %d\n", db->int_size);
-    printf("str_size %d\n", db->str_size);
+    return db;
+}
 
-    Record *first = Record_new(0, (void *[]) {"foo", "bar", (void *) 10});
-    Record *second = Record_new(0, (void *[]) {"baz", "qux", (void *) 22});
+Record *parse_line(char *line, RecordDef *def, int def_idx)
+{
+    char *tok;
+    int col_idx = 0;
 
-    Database_push(db, first);
-    Database_push(db, second);
+    void **values = malloc(sizeof(void *) * def->size);
+    assert(values != NULL);
+
+    for (tok = strtok(line, ","); tok && *tok; tok = strtok(NULL, ",\n")) {
+        void *value;
+
+        switch (def->column_ds[col_idx]->type) {
+        case BOOL:
+            value = (void *) (long) atoi(tok);
+            break;
+        case INT:
+            value = (void *) (long) atoi(tok);
+            break;
+        case STR:
+            value = strdup(tok);
+            break;
+        }
+
+        values[col_idx] = value;
+        col_idx += 1;
+    }
+
+    return Record_new(def_idx, values);
+}
+
+int main(int argc, char **argv)
+{
+    Database *db = Database_create_sample();
+
+    if (argc < 3) die("usage: %s <csvfile> <defindex>", argv[0]);
+
+    char *csv_file = argv[1];
+    int def_idx = atoi(argv[2]);
+
+    FILE* stream = fopen(csv_file, "r");
+
+    char line[1024];
+    while (fgets(line, 1024, stream)) {
+        char *tmp = strdup(line);
+        Record *row = parse_line(tmp, db->record_ds[def_idx], def_idx);
+        free(tmp);
+
+        Database_push(db, row);
+    }
 
     for (int i = 0; i < db->bool_size; i++) {
         for (int j = 0; j < db->bool_idxs[i]; j++) {
-            printf("bools[%d][%d]: %d\n", i, j, db->bool_columns[i][j]);
+            debug("bools[%d][%d]: %d", i, j, db->bool_columns[i][j]);
         }
     }
 
     for (int i = 0; i < db->int_size; i++) {
         for (int j = 0; j < db->int_idxs[i]; j++) {
-            printf("ints[%d][%d]: %d\n", i, j, db->int_columns[i][j]);
+            debug("ints[%d][%d]: %d", i, j, db->int_columns[i][j]);
         }
     }
 
     for (int i = 0; i < db->str_size; i++) {
         for (int j = 0; j < db->str_idxs[i]; j++) {
-            printf("strs[%d][%d]: %c\n", i, j, db->str_columns[i][j]);
+            debug("strs[%d][%d]: %c", i, j, db->str_columns[i][j]);
         }
     }
 
