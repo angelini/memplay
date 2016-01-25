@@ -6,19 +6,20 @@
 typedef enum col_t { BOOL, INT, STR } col_t;
 
 typedef struct ColumnDef {
-    const char *key;
+    char *key;
     col_t type;
 } ColumnDef;
 
 typedef struct RecordDef {
-    const char *name;
-    const ColumnDef **column_ds;
+    char *name;
+    ColumnDef **column_ds;
     int size;
 } RecordDef;
 
 typedef struct Record {
     int def_idx;
-    const void **values;
+    void **values;
+    int size;
 } Record;
 
 typedef struct Database {
@@ -39,14 +40,22 @@ typedef struct Database {
     char **str_columns;
 } Database;
 
-ColumnDef *ColumnDef_new(const char *key, col_t type);
+ColumnDef *ColumnDef_new(char *key, col_t type);
 
-RecordDef *RecordDef_new(const char *name, const ColumnDef **column_ds, int size);
+void ColumnDef_destroy(ColumnDef *column_d);
 
-Record *Record_new(int def_idx, const void **values);
+RecordDef *RecordDef_new(char *name, ColumnDef **column_ds, int size);
+
+void RecordDef_destroy(RecordDef *record_d);
+
+Record *Record_new(int def_idx, void **values, int size);
+
+void Record_destroy(Record *record);
 
 Database *Database_new(RecordDef **record_ds, int size);
 
-void Database_push(Database *db, const Record *record);
+void Database_destroy(Database *db);
+
+void Database_push(Database *db, Record *record);
 
 #endif

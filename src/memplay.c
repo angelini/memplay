@@ -13,19 +13,26 @@ Database *Database_create_sample()
     ColumnDef *last_name = ColumnDef_new("last_name", STR);
     ColumnDef *age = ColumnDef_new("age", INT);
 
-    const ColumnDef **person_cols = malloc(sizeof(ColumnDef *) * 3);
-    assert(person_cols != NULL);
+    ColumnDef **person_cols = malloc(sizeof(ColumnDef *) * 3);
+    check_mem(person_cols);
     person_cols[0] = first_name;
     person_cols[1] = last_name;
     person_cols[2] = age;
     RecordDef *person = RecordDef_new("person", person_cols, 3);
 
     RecordDef **record_ds = malloc(sizeof(RecordDef *));
-    assert(record_ds != NULL);
+    check_mem(record_ds);
     record_ds[0] = person;
     Database *db = Database_new(record_ds, 1);
 
     return db;
+
+error:
+    if (person_cols) {
+        free(person_cols);
+        if (record_ds) free(record_ds);
+    }
+    return NULL;
 }
 
 Record *parse_line(char *line, const RecordDef *def, int def_idx)
@@ -33,8 +40,8 @@ Record *parse_line(char *line, const RecordDef *def, int def_idx)
     char *tok;
     int col_idx = 0;
 
-    const void **values = malloc(sizeof(void *) * def->size);
-    assert(values != NULL);
+    void **values = malloc(sizeof(void *) * def->size);
+    check_mem(values);
 
     for (tok = strtok(line, ","); tok && *tok; tok = strtok(NULL, ",\n")) {
         void *value;
@@ -55,29 +62,33 @@ Record *parse_line(char *line, const RecordDef *def, int def_idx)
         col_idx += 1;
     }
 
-    return Record_new(def_idx, values);
+    return Record_new(def_idx, values, def->size);
+
+error:
+    if (values) free(values);
+    return NULL;
 }
 
 int main(int argc, char **argv)
 {
     Database *db = Database_create_sample();
 
-    if (argc < 3) die("usage: %s <csvfile> <defindex>", argv[0]);
+    check(argc == 3, "usage: %s <csvfile> <defindex>", argv[0]);
 
     char *csv_file = argv[1];
     int def_idx = atoi(argv[2]);
 
-    if (def_idx >= db->def_size) die("unknown def index: %d", def_idx);
+    check(def_idx < db->def_size, "unknown def index: %d", def_idx);
 
     FILE* stream = fopen(csv_file, "r");
 
     char line[1024];
     while (fgets(line, 1024, stream)) {
         char *tmp = strdup(line);
-        Record *row = parse_line(tmp, db->record_ds[def_idx], def_idx);
+        Record *record = parse_line(tmp, db->record_ds[def_idx], def_idx);
         free(tmp);
 
-        Database_push(db, row);
+        Database_push(db, record);
     }
 
     for (int i = 0; i < db->bool_size; i++) {
@@ -99,4 +110,7 @@ int main(int argc, char **argv)
     }
 
     return 0;
+
+error:
+    return 1;
 }

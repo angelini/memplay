@@ -1,49 +1,94 @@
-#include <assert.h>
-
 #include "dbg.h"
 #include "database.h"
 
 #define DEFAULT_COL_SIZE 256
 #define DEFAULT_STR_COL_SIZE DEFAULT_COL_SIZE * 64
 
-ColumnDef *ColumnDef_new(const char *key, col_t type)
+ColumnDef *ColumnDef_new(char *key, col_t type)
 {
     ColumnDef *col = malloc(sizeof(ColumnDef));
-    assert(col != NULL);
+    check_mem(col);
 
     col->key = key;
     col->type = type;
 
     return col;
+
+error:
+    return NULL;
 }
 
-RecordDef *RecordDef_new(const char *name, const ColumnDef **column_ds, int size)
+void ColumnDef_destroy(ColumnDef *column_d)
+{
+    if (column_d) {
+        if (column_d->key) free(column_d->key);
+        free(column_d);
+    }
+}
+
+RecordDef *RecordDef_new(char *name, ColumnDef **column_ds, int size)
 {
     RecordDef *def = malloc(sizeof(RecordDef));
-    assert(def != NULL);
+    check_mem(def);
 
     def->name = name;
     def->column_ds = column_ds;
     def->size = size;
 
     return def;
+
+error:
+    return NULL;
 }
 
-Record *Record_new(int def_idx, const void **values)
+void RecordDef_destroy(RecordDef *record_d)
+{
+    if (record_d) {
+        if (record_d->name) free(record_d->name);
+
+        if (record_d->column_ds) {
+            for (int i = 0; i < record_d->size; i++) {
+                ColumnDef_destroy(record_d->column_ds[i]);
+            }
+            free(record_d->column_ds);
+        }
+
+        free(record_d);
+    }
+}
+
+Record *Record_new(int def_idx, void **values, int size)
 {
     Record *record = malloc(sizeof(Record));
-    assert(record != NULL);
+    check_mem(record);
 
     record->def_idx = def_idx;
     record->values = values;
+    record->size = size;
 
     return record;
+
+error:
+    return NULL;
+}
+
+void Record_destroy(Record *record)
+{
+    if (record) {
+        if (record->values) {
+            for (int i = 0; i < record->size; i++) {
+                free(record->values[i]);
+            }
+        }
+
+        free(record);
+    }
 }
 
 Database *Database_new(RecordDef **record_ds, int size)
 {
     Database *db = malloc(sizeof(Database));
-    assert(db != NULL);
+    check_mem(db);
 
     db->record_ds = record_ds;
     db->def_size = size;
@@ -68,39 +113,80 @@ Database *Database_new(RecordDef **record_ds, int size)
 
     db->bool_idxs = malloc(sizeof(int) * db->bool_size);
     db->bool_columns = malloc(sizeof(bool *) * db->bool_size);
-    assert(db->bool_idxs != NULL); assert(db->bool_columns != NULL);
+    check_mem(db->bool_idxs); check_mem(db->bool_columns);
 
     db->int_idxs = malloc(sizeof(int) * db->int_size);
     db->int_columns = malloc(sizeof(int *) * db->int_size);
-    assert(db->int_idxs != NULL); assert(db->int_columns != NULL);
+    check_mem(db->int_idxs); check_mem(db->int_columns);
 
     db->str_idxs = malloc(sizeof(int) * db->str_size);
     db->str_columns = malloc(sizeof(char *) * db->str_size);
-    assert(db->str_idxs != NULL); assert(db->str_columns != NULL);
+    check_mem(db->str_idxs); check_mem(db->str_columns);
 
     for (int i = 0; i < db->bool_size; i++) {
         db->bool_idxs[i] = 0;
         db->bool_columns[i] = malloc(sizeof(bool) * DEFAULT_COL_SIZE);
-        assert(db->bool_columns[i] != NULL);
+        check_mem(db->bool_columns[i]);
     }
 
     for (int i = 0; i < db->int_size; i++) {
         db->int_idxs[i] = 0;
         db->int_columns[i] = malloc(sizeof(int) * DEFAULT_COL_SIZE);
-        assert(db->int_columns[i] != NULL);
+        check_mem(db->int_columns[i]);
     }
 
 
     for (int i = 0; i < db->str_size; i++) {
         db->str_idxs[i] = 0;
         db->str_columns[i] = malloc(sizeof(char) * DEFAULT_STR_COL_SIZE);
-        assert(db->str_columns[i] != NULL);
+        check_mem(db->str_columns[i]);
     }
 
     return db;
+
+error:
+    if (db) Database_destroy(db);
+    return NULL;
 }
 
-void Database_push(Database *db, const Record *record)
+void Database_destroy(Database *db)
+{
+    if (db) {
+        if (db->record_ds) {
+            for (int i = 0; i < db->def_size; i++) {
+                RecordDef_destroy(db->record_ds[i]);
+            }
+        }
+
+        if (db->bool_idxs) free(db->bool_idxs);
+        if (db->bool_columns) {
+            for (int i = 0; i < db->bool_size; i++) {
+                free(db->bool_columns[i]);
+            }
+            free(db->bool_columns);
+        }
+
+        if (db->int_idxs) free(db->int_idxs);
+        if (db->int_columns) {
+            for (int i = 0; i < db->int_size; i++) {
+                free(db->int_columns[i]);
+            }
+            free(db->int_columns);
+        }
+
+        if (db->str_idxs) free(db->str_idxs);
+        if (db->str_columns) {
+            for (int i = 0; i < db->str_size; i++) {
+                free(db->str_columns[i]);
+            }
+            free(db->str_columns);
+        }
+
+        free(db);
+    }
+}
+
+void Database_push(Database *db, Record *record)
 {
     int def_idx = record->def_idx;
     RecordDef *def = db->record_ds[def_idx];

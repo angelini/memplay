@@ -1,2 +1,3 @@
 memplay
 memplay.o
+*.dSYM
