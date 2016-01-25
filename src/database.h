@@ -58,4 +58,6 @@ void Database_destroy(Database *db);
 
 void Database_push(Database *db, Record *record);
 
+void Database_print(Database *db);
+
 #endif

@@ -93,23 +93,8 @@ int main(int argc, char **argv)
         // Record_destroy(record);
     }
 
-    for (int i = 0; i < db->bool_size; i++) {
-        for (int j = 0; j < db->bool_idxs[i]; j++) {
-            debug("bools[%d][%d]: %d", i, j, db->bool_columns[i][j]);
-        }
-    }
-
-    for (int i = 0; i < db->int_size; i++) {
-        for (int j = 0; j < db->int_idxs[i]; j++) {
-            debug("ints[%d][%d]: %d", i, j, db->int_columns[i][j]);
-        }
-    }
-
-    for (int i = 0; i < db->str_size; i++) {
-        for (int j = 0; j < db->str_idxs[i]; j++) {
-            debug("strs[%d][%d]: %c", i, j, db->str_columns[i][j]);
-        }
-    }
+    Database_print(db);
+    Database_destroy(db);
 
     return 0;
 
