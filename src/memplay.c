@@ -89,6 +89,8 @@ int main(int argc, char **argv)
         free(tmp);
 
         Database_push(db, record);
+        // FIXME: Cannot free int values
+        // Record_destroy(record);
     }
 
     for (int i = 0; i < db->bool_size; i++) {
