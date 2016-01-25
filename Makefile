@@ -1,10 +1,15 @@
-CFLAGS=-Wall -g -std=c11
+CFLAGS=-Wall -Wextra -g -std=c11
 
-all: memplay
+SOURCES=$(wildcard src/**/*.c src/*.c)
+OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 
-memplay: memplay.o
+TARGET=memplay
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS)
 
 clean:
-	rm -f *.o
-	rm -f memplay
-	rm -rf *.dSYM
+	rm -rf `find . -name "*.dSYM" -print`
+	rm -rf $(OBJECTS) $(TARGET)
