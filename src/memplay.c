@@ -7,7 +7,7 @@
 #include "dbg.h"
 #include "database.h"
 
-Database *Database_create_sample()
+Database *create_sample()
 {
     ColumnDef *first_name = ColumnDef_new("first_name", STR);
     ColumnDef *last_name = ColumnDef_new("last_name", STR);
@@ -57,7 +57,7 @@ error:
 
 int main(int argc, char **argv)
 {
-    Database *db = Database_create_sample();
+    Database *db = create_sample();
 
     check(argc == 3, "usage: %s <csvfile> <defindex>", argv[0]);
 
@@ -77,6 +77,8 @@ int main(int argc, char **argv)
         Database_push(db, record);
         Record_destroy(record);
     }
+
+    fclose(stream);
 
     Database_print(db);
     Database_destroy(db);

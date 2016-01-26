@@ -79,6 +79,7 @@ void Record_destroy(Record *record)
             for (int i = 0; i < record->size; i++) {
                 free(record->values[i]);
             }
+            free(record->values);
         }
 
         free(record);
@@ -156,6 +157,7 @@ void Database_destroy(Database *db)
             for (int i = 0; i < db->def_size; i++) {
                 RecordDef_destroy(db->record_ds[i]);
             }
+            free(db->record_ds);
         }
 
         if (db->bool_idxs) free(db->bool_idxs);
@@ -212,9 +214,8 @@ void Database_push(Database *db, Record *record)
 
         } else {
             int str_idx = db->str_idxs[str_cur];
-            char *val = strdup(record->values[i]);
-            strcpy(&db->str_columns[str_cur][str_idx], val);
-            db->str_idxs[str_cur] += strlen(val);
+            strcpy(&db->str_columns[str_cur][str_idx], record->values[i]);
+            db->str_idxs[str_cur] += strlen(record->values[i]);
             str_cur += 1;
         }
     }
