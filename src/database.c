@@ -6,7 +6,7 @@
 
 ColumnDef *ColumnDef_new(char *key, col_t type)
 {
-    ColumnDef *col = malloc(sizeof(ColumnDef));
+    ColumnDef *col = calloc(1, sizeof(ColumnDef));
     check_mem(col);
 
     col->key = key;
@@ -28,7 +28,7 @@ void ColumnDef_destroy(ColumnDef *column_d)
 
 RecordDef *RecordDef_new(char *name, ColumnDef **column_ds, int size)
 {
-    RecordDef *def = malloc(sizeof(RecordDef));
+    RecordDef *def = calloc(1, sizeof(RecordDef));
     check_mem(def);
 
     def->name = name;
@@ -59,7 +59,7 @@ void RecordDef_destroy(RecordDef *record_d)
 
 Record *Record_new(int def_idx, void **values, int size)
 {
-    Record *record = malloc(sizeof(Record));
+    Record *record = calloc(1, sizeof(Record));
     check_mem(record);
 
     record->def_idx = def_idx;
@@ -87,7 +87,7 @@ void Record_destroy(Record *record)
 
 Database *Database_new(RecordDef **record_ds, int size)
 {
-    Database *db = malloc(sizeof(Database));
+    Database *db = calloc(1, sizeof(Database));
     check_mem(db);
 
     db->record_ds = record_ds;
@@ -111,34 +111,34 @@ Database *Database_new(RecordDef **record_ds, int size)
         }
     }
 
-    db->bool_idxs = malloc(sizeof(int) * db->bool_size);
-    db->bool_columns = malloc(sizeof(bool *) * db->bool_size);
+    db->bool_idxs = calloc(db->bool_size, sizeof(int));
+    db->bool_columns = calloc(db->bool_size, sizeof(bool *));
     check_mem(db->bool_idxs); check_mem(db->bool_columns);
 
-    db->int_idxs = malloc(sizeof(int) * db->int_size);
-    db->int_columns = malloc(sizeof(int *) * db->int_size);
+    db->int_idxs = calloc(db->int_size, sizeof(int));
+    db->int_columns = calloc(db->int_size, sizeof(int *));
     check_mem(db->int_idxs); check_mem(db->int_columns);
 
-    db->str_idxs = malloc(sizeof(int) * db->str_size);
-    db->str_columns = malloc(sizeof(char *) * db->str_size);
+    db->str_idxs = calloc(db->str_size, sizeof(int));
+    db->str_columns = calloc(db->str_size, sizeof(char *));
     check_mem(db->str_idxs); check_mem(db->str_columns);
 
     for (int i = 0; i < db->bool_size; i++) {
         db->bool_idxs[i] = 0;
-        db->bool_columns[i] = malloc(sizeof(bool) * DEFAULT_COL_SIZE);
+        db->bool_columns[i] = calloc(DEFAULT_COL_SIZE, sizeof(bool));
         check_mem(db->bool_columns[i]);
     }
 
     for (int i = 0; i < db->int_size; i++) {
         db->int_idxs[i] = 0;
-        db->int_columns[i] = malloc(sizeof(int) * DEFAULT_COL_SIZE);
+        db->int_columns[i] = calloc(DEFAULT_COL_SIZE, sizeof(int));
         check_mem(db->int_columns[i]);
     }
 
 
     for (int i = 0; i < db->str_size; i++) {
         db->str_idxs[i] = 0;
-        db->str_columns[i] = malloc(sizeof(char) * DEFAULT_STR_COL_SIZE);
+        db->str_columns[i] = calloc(DEFAULT_STR_COL_SIZE, sizeof(char));
         check_mem(db->str_columns[i]);
     }
 

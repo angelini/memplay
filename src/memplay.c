@@ -13,14 +13,14 @@ Database *Database_create_sample()
     ColumnDef *last_name = ColumnDef_new("last_name", STR);
     ColumnDef *age = ColumnDef_new("age", INT);
 
-    ColumnDef **person_cols = malloc(sizeof(ColumnDef *) * 3);
+    ColumnDef **person_cols = calloc(3, sizeof(ColumnDef *));
     check_mem(person_cols);
     person_cols[0] = first_name;
     person_cols[1] = last_name;
     person_cols[2] = age;
     RecordDef *person = RecordDef_new("person", person_cols, 3);
 
-    RecordDef **record_ds = malloc(sizeof(RecordDef *));
+    RecordDef **record_ds = calloc(1, sizeof(RecordDef *));
     check_mem(record_ds);
     record_ds[0] = person;
     Database *db = Database_new(record_ds, 1);
@@ -40,7 +40,7 @@ Record *parse_line(char *line, const RecordDef *def, int def_idx)
     char *tok;
     int col_idx = 0;
 
-    void **values = malloc(sizeof(void *) * def->size);
+    void **values = calloc(def->size, sizeof(void *));
     check_mem(values);
 
     for (tok = strtok(line, ","); tok && *tok; tok = strtok(NULL, ",\n")) {
