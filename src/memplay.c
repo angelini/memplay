@@ -67,16 +67,15 @@ int main(int argc, char **argv)
     check(def_idx < db->def_size, "unknown def index: %d", def_idx);
 
     FILE* stream = fopen(csv_file, "r");
-
     char line[1024];
+
     while (fgets(line, 1024, stream)) {
         char *tmp = strdup(line);
         Record *record = parse_line(tmp, db->record_ds[def_idx], def_idx);
         free(tmp);
 
         Database_push(db, record);
-        // FIXME: Cannot free int values
-        // Record_destroy(record);
+        Record_destroy(record);
     }
 
     Database_print(db);

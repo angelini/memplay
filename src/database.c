@@ -9,7 +9,7 @@ ColumnDef *ColumnDef_new(char *key, col_t type)
     ColumnDef *col = calloc(1, sizeof(ColumnDef));
     check_mem(col);
 
-    col->key = key;
+    col->key = strdup(key);  // strdup to allow string literals + free
     col->type = type;
 
     return col;
@@ -31,7 +31,7 @@ RecordDef *RecordDef_new(char *name, ColumnDef **column_ds, int size)
     RecordDef *def = calloc(1, sizeof(RecordDef));
     check_mem(def);
 
-    def->name = name;
+    def->name = strdup(name);  // strdup to allow string literals + free
     def->column_ds = column_ds;
     def->size = size;
 

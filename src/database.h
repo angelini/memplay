@@ -12,19 +12,19 @@ typedef struct ColumnDef {
 
 typedef struct RecordDef {
     char *name;
-    ColumnDef **column_ds;
     int size;
+    ColumnDef **column_ds;
 } RecordDef;
 
 typedef struct Record {
     int def_idx;
-    void **values;
     int size;
+    char **values;
 } Record;
 
 typedef struct Database {
-    RecordDef **record_ds;
     int def_size;
+    RecordDef **record_ds;
     int size;
 
     int bool_size;
