@@ -57,7 +57,7 @@ void RecordDef_destroy(RecordDef *record_d)
     }
 }
 
-Record *Record_new(int def_idx, void **values, int size)
+Record *Record_new(int def_idx, char **values, int size)
 {
     Record *record = calloc(1, sizeof(Record));
     check_mem(record);
@@ -198,21 +198,21 @@ void Database_push(Database *db, Record *record)
 
         if (column_d->type == BOOL) {
             int bool_idx = db->bool_idxs[bool_cur];
-            bool val = (bool) record->values[i];
+            bool val = (bool) atoi(record->values[i]);
             db->bool_columns[bool_cur][bool_idx] = val;
             db->bool_idxs[bool_cur] += 1;
             bool_cur += 1;
 
         } else if (column_d->type == INT) {
             int int_idx = db->int_idxs[int_cur];
-            int val = (int) record->values[i];
+            int val = atoi(record->values[i]);
             db->int_columns[int_cur][int_idx] = val;
             db->int_idxs[int_cur] += 1;
             int_cur += 1;
 
         } else {
             int str_idx = db->str_idxs[str_cur];
-            char *val = (char*) record->values[i];
+            char *val = strdup(record->values[i]);
             strcpy(&db->str_columns[str_cur][str_idx], val);
             db->str_idxs[str_cur] += strlen(val);
             str_cur += 1;

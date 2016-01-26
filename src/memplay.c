@@ -40,25 +40,11 @@ Record *parse_line(char *line, const RecordDef *def, int def_idx)
     char *tok;
     int col_idx = 0;
 
-    void **values = calloc(def->size, sizeof(void *));
+    char **values = calloc(def->size, sizeof(char *));
     check_mem(values);
 
     for (tok = strtok(line, ","); tok && *tok; tok = strtok(NULL, ",\n")) {
-        void *value;
-
-        switch (def->column_ds[col_idx]->type) {
-        case BOOL:
-            value = (void *) (long) atoi(tok);
-            break;
-        case INT:
-            value = (void *) (long) atoi(tok);
-            break;
-        case STR:
-            value = strdup(tok);
-            break;
-        }
-
-        values[col_idx] = value;
+        values[col_idx] = strdup(tok);
         col_idx += 1;
     }
 

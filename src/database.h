@@ -48,7 +48,7 @@ RecordDef *RecordDef_new(char *name, ColumnDef **column_ds, int size);
 
 void RecordDef_destroy(RecordDef *record_d);
 
-Record *Record_new(int def_idx, void **values, int size);
+Record *Record_new(int def_idx, char **values, int size);
 
 void Record_destroy(Record *record);
 
